@@ -20,7 +20,7 @@
 	<name>Spring Boot Gamesight Application</name>
 	<version>1.0</version>
 
-
+<!--comment-->
 	<parent>
 		<groupId>org.springframework.boot</groupId>
 		<artifactId>spring-boot-starter-parent</artifactId>
