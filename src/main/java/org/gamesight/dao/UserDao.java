@@ -136,6 +136,12 @@ public class UserDao {
 		return userPage;
 	}
 
+	public List<User> findAll() {
+		List<User> userList =  userRepository.findAll();
+		return userList;
+	}
+
+
 	public Optional<UserDto> findById(Long id) {
 		if ( id == null) {
 			throw new ResourceNotFoundException("User updateUser() request with null id");

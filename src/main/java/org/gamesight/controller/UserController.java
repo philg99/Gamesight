@@ -12,13 +12,16 @@ import org.gamesight.exception.ResourceNotFoundException;
 import org.gamesight.model.User;
 
 import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
 
@@ -31,6 +34,7 @@ public class UserController {
 	private final UserDao userDao;
 
 	private static final Logger logger = LogManager.getLogger(UserController.class);
+	private static final int DEF_PAGE_SIZE = 5;
 
 	UserController(UserDao userDao) {
 
@@ -41,8 +45,17 @@ public class UserController {
 	Get all existing User records.
 	 */
 	@GetMapping("/api/v1/mgmt/user")
-	Page<User> findAll(Pageable pageable) {
+	// TODO: pageable object contains an invalid Sort string. Swagger issue?
+	Page<User> findAll(@RequestParam(required = false, name = "pageNum", defaultValue = "0") Integer pageNum,
+			@RequestParam(required = false, name = "pageSize", defaultValue = "5") Integer pageSize,
+			@RequestParam(required = false, name = "sortBy",  defaultValue = "emailAddress" ) String sortBy,
+			@RequestParam(required = false, name = "sortDir", defaultValue = "ASC") String sortDir)  {
 
+		// Paged request :
+		Sort sort = (sortDir == null || sortDir.equalsIgnoreCase(Sort.Direction.ASC.name())) ?
+				Sort.by(sortBy).ascending() : Sort.by(sortBy).descending();
+
+		Pageable pageable = PageRequest.of(pageNum, pageSize, sort);
 		return userDao.findAll(pageable);
 	}
 
@@ -58,7 +71,7 @@ public class UserController {
 
 		// Validate the requested User email address and then create a new User.
 		try {
-			if (userDao.isUniqueEmailAddress(userDto.getEmailAddress())) {
+			if ((userDto.getEmailAddress().length() != 0) && userDao.isUniqueEmailAddress(userDto.getEmailAddress())) {
 				return userDao.createUser(userDto);
 			} else {
 				throw new DuplicateResourceException(userDto.getEmailAddress());
@@ -86,5 +99,7 @@ public class UserController {
 	void deleteUser(@PathVariable Long id) {
 		userDao.deleteById(id);
 	}
+
+	// TODO: add PUT api
 
 }

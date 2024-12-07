@@ -29,6 +29,11 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
 
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.responses.ApiResponse;
+import io.swagger.v3.oas.annotations.responses.ApiResponses;
+
+
 @RestController
 public class ProfileController {
 
@@ -50,11 +55,14 @@ public class ProfileController {
 	// TODO - Consider rewriting page-based processing with hypermedia support:
 	// https://docs.spring.io/spring-data/jpa/docs/current/reference/html/#core.web
 
+	@ApiResponses(value = {
+			@ApiResponse(responseCode = "200", description = "Successful operation")
+	})
 	@GetMapping("/api/v1/mgmt/profile")
 	FindAllWrapper findAllProfiles(@RequestParam(required = false, name = "pageNum") Integer pageNum,
-			@RequestParam(required = false, name = "pageSize") Integer pageSize,
-			@RequestParam(required = false, name = "sortBy") String sortBy,
-			@RequestParam(required = false, name = "sortDir") String sortDir) {
+			@RequestParam(required = false, name = "pageSize", defaultValue = "5") Integer pageSize,
+			@RequestParam(required = false, name = "sortBy", defaultValue = "dob") String sortBy,
+			@RequestParam(required = false, name = "sortDir", defaultValue = "ASC") String sortDir) {
 
 		/*
 		Since we can only map a single GetMapping impl against our /profile operations,
@@ -62,7 +70,7 @@ public class ProfileController {
 		class. The existence (or not) of the paging params will determine whether this is
 		a paged request.
 		 */
-		if (pageNum == null || pageSize == null || sortBy == null) {
+		if (pageNum == null) {
 			//  Non-paged request:
 			List<Profile> profileList = Optional.of(profileDao.findAll()).
 					orElseThrow(() -> new ResourceNotFoundException("finaAllProfiles failed"));
@@ -99,6 +107,7 @@ public class ProfileController {
 					.orElseThrow(() -> new ResourceNotFoundException("createProfile failed"));
 		} catch (ResourceAlreadyExistsException raee) {
 			logger.warn("Create Profile from profileDto failed: {} ", () -> profileDto);
+			throw new ResourceNotFoundException("createProfile failed - resource already exists");
 		}
 		logger.info("Create Profile response ProfileDto: : " +  returnVal);
 		return returnVal;
