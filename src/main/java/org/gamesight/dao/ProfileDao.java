@@ -72,10 +72,10 @@ public class ProfileDao {
 
 	public UserDto createUserAndProfile(UserDto userDto) throws ResourceAlreadyExistsException {
 		// Create method should not find existing entity id's.
-		if ((userDto.getId() != 0) && (userDto.getId() != null)) {
+		if ((userDto.getId() != null)) {
 			throw new ResourceAlreadyExistsException("User entity", userDto.getId());
 		} else {
-			if ((userDto.getProfileId()!= 0) && (userDto.getProfileId()!= null)) {
+			if ((userDto.getProfileId()!= null)) {
 				throw new ResourceAlreadyExistsException("Profile entity", userDto.getProfileId());
 			}
 		}
@@ -93,7 +93,7 @@ public class ProfileDao {
 
 	public ProfileDto createProfile(ProfileDto profileDto) throws ResourceAlreadyExistsException {
 		// Create method should not find existing entity id's.
-		if (profileDto.getId()!= 0) {
+		if (profileDto.getId()!= null) {
 			throw new ResourceAlreadyExistsException("Profile entity", profileDto.getId());
 		}
 		Profile newProfile = profileRepository.save(mapFromProfileDto(profileDto));
